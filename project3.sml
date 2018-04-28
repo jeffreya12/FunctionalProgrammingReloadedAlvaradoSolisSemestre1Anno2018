@@ -69,7 +69,7 @@ val longest_string3 = longest_string_helper (fn (x, y) => x <= y)
 val longest_string4 = longest_string_helper (fn (x, y) => x < y)
 
 (* 5 *)
-(* Valor que llama a las funciones longest_string1 y only_capitals. primero
+(* Valor que llama a las funciones longest_string1 y only_capitals. Primero
    only_capitals retorna una lista con todos los elementos que inicien con
    mayúscula y luego longest_string1 retorna el más largo de éstos *)
 val longest_capitalized = longest_string1 o only_capitals
@@ -89,7 +89,7 @@ fun first_answer f xs=
                   (* Si hay algo en la lista, aplica la función a su primer
                      elemento *)
                   NONE => first_answer f tl (* Si retorna NONE, busca el siguiente *)
-                  | SOME v => v (* Si retorna SOME v, valor de la función es v *)
+                  | SOME v => v (* Si retorna SOME v, el valor de la función es v *)
 
 (* 8 *)
 fun all_answers f xs=
