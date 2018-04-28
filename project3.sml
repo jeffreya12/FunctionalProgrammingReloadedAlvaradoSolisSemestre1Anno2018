@@ -1,3 +1,30 @@
+exception NoAnswer
+
+datatype pattern = Wildcard
+                   | Variable of string
+                   | UnitP
+                   | ConstP of int
+                   | TupleP of pattern list
+                   | ConstructorP of string * pattern
+
+datatype valu = Const of int
+                | Unit
+                | Tuple of valu list
+                | Constructor of string * valu
+
+fun g f1 f2 p =
+  let
+    val r = g f1 f2
+  in
+    case p of
+      Wildcard              => f1 ()
+      | Variable x          => f2 x
+      | TupleP ps           => List.foldl (fn (p,i) => (r p) + i) 0 ps
+      | ConstructorP (_,p)  => r p
+      | _                   => 0
+  end
+
+
 (* 1 *)
 fun only_capitals (xs)=
   (* List.filter recibe una función anónima, la cual consulta a Char.isUpper
@@ -44,9 +71,48 @@ val longest_string4 = longest_string_helper (fn (x, y) => x < y)
 (* 5 *)
 (* Valor que llama a las funciones longest_string1 y only_capitals. primero
    only_capitals retorna una lista con todos los elementos que inicien con
-   mayúscula y luego longest_string1 retorna el más largo de éstos*)
+   mayúscula y luego longest_string1 retorna el más largo de éstos *)
 val longest_capitalized = longest_string1 o only_capitals
 
+(* 6 *)
+(* Primero String.explode convierte el String en una lista de Char. luego
+   rev invierte el orden de dicha lista y luego String.implode genera un
+   String con los valores de la lista invertida *)
+val rev_string = String.implode o rev o String.explode
+
+(* 7 *)
+fun first_answer f xs=
+  case xs of
+    (* Si llega al final de la lista, entonces levanta la excepción NoAnswer *)
+    [] => raise NoAnswer
+    | hd::tl => case f(hd) of
+                  (* Si hay algo en la lista, aplica la función a su primer
+                     elemento *)
+                  NONE => first_answer f tl (* Si retorna NONE, busca el siguiente *)
+                  | SOME v => v (* Si retorna SOME v, valor de la función es v *)
+
+(* 8 *)
+fun all_answers f xs=
+  let
+    (* Valor que define si existen o no valores NONE en la lista *)
+    val none_exists = List.exists (fn x => f(x) = NONE)
+    (* Resultado de concatenar la lista *)
+    val result = List.foldr (fn (x, acc)  => (case f(x) of
+                                              (* Solo se llama si no hay NONE,
+                                                 por lo que sólo contiene un
+                                                 caso *)
+                                                SOME v => v@acc ))
+  in
+    case xs of
+      (* Si la lista es vacía, retorna SOME [] *)
+      [] => SOME []
+      | _ => if none_exists xs
+             (* Si hay NONE en la lista, retorna NONE *)
+             then NONE
+             (* Si no hay NONE en la lista, retorna SOME con la nueva lista
+                creada. *)
+             else SOME (result [] xs)
+  end
 
 val test1 = only_capitals ["A","B","C", "lower"] (* = ["A","B","C"] *)
 val test2 = longest_string1 ["A","bc","C","ef"] (* = "bc" *)
@@ -54,12 +120,12 @@ val test3 = longest_string2 ["A","bc","C","ef"] (* = "ef" *)
 val test4a = longest_string3 ["A","bc","C","ef", "ab"] (* = "bc" *)
 val test4b = longest_string4 ["A","B","C","D","E"] (* = "E" *)
 val test5 = longest_capitalized ["A","bc","C"] (* = "A" *)
+val test6 = rev_string "abc" (* = "cba" *)
+val test7 = first_answer (fn x => if x > 3 then SOME x else NONE) [1,2,3,4,5] (* = 4 *)
+val test8a = all_answers (fn x => if x > 2 then SOME [x] else NONE) [2,3,4] (* = NONE *)
+val test8b = all_answers (fn x => if x >= 2 then SOME [x] else NONE) [2,3,4] (* = SOME [2,3,4] *)
 
 (*
-
-val test6 = rev_string "abc" = "cba"
-val test7 = first_answer (fn x => if x > 3 then SOME x else NONE) [1,2,3,4,5] = 4
-val test8 = all_answers (fn x => if x <> 2 then SOME [x] else NONE) [2,3,4] = NONE
 val test9a = count_wildcards Wildcard = 1
 val pattern1 = TupleP([Variable "var", Wildcard, TupleP([Variable "var", Wildcard,
 TupleP([Variable "var", Wildcard])])]);
@@ -80,5 +146,4 @@ Tuple([]))]);
 val pattern_tp = TupleP([ConstP 12, Variable "var1", ConstructorP("constr1", Wildcard)]);
 val test11_3 = match(pattern_t, pattern_tp) = SOME [("var1", Constructor("blah", Unit))];
 val test12 = first_match Unit [UnitP] = SOME []
-
 *)
