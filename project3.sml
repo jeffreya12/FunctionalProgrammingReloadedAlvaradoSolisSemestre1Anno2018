@@ -129,7 +129,7 @@ fun count_wild_and_variable_lengths p = g (fn _ => 1) (fn x => String.size x) p
 (* la función crea dos funciones anónimas: f1 retorna 0, ya que es la que
    se ejecuta cuando hay un Wildcard, y f2 que retorna 1 en caso que haga macth
    con el String, 0 en caso contrario *)
-fun count_some_var (match, p) = g (fn _ => 0) (fn x => if x = match then 1 else 0) p
+fun count_some_var (text, p) = g (fn _ => 0) (fn x => if x = text then 1 else 0) p
 
 (* 10 *)
 fun check_pat p =
@@ -158,6 +158,56 @@ fun check_pat p =
     check_repeat(variable_content p)
   end
 
+(* 11 *)
+fun match (v, p)=
+  case (v, p) of
+    (* Wildcard hace match con todo y retorna una lista vacía *)
+    (_, Wildcard) => SOME []
+    (* Variable hace match con todo y retorna una lista con una tupla
+       String * Valu *)
+    | (_, Variable s) => SOME [(s, v)]
+    (* UnitP hace match con Unit y retorna una lista vacía *)
+    | (Unit, UnitP) => SOME []
+    (* ConstP hace match con Const *)
+    | (Const c, ConstP cp) => if c = cp
+                              (* Si son iguales, retorna una lista vacía *)
+                              then SOME []
+                              (* Si no son iguales, no hay match *)
+                              else NONE
+    (* TupleP hace match con Tuple *)
+    | (Tuple vs, TupleP ps) => if List.length vs = List.length ps
+                               (* Si son del mismo tamaño *)
+                               then
+                                  (* ListPair.zip => Combina ambas listas en pares
+                                     match => recursivamente valida el match de
+                                              cada par
+                                     all_answers => contiene una lista con todos
+                                                    los pares que hacen match *)
+                                  case all_answers match (ListPair.zip(vs,ps)) of
+                                    SOME tp => SOME tp
+                                    (* Si el par no hace match, retorna NONE *)
+                                    | _ => NONE
+                               (* Si no son del mismo tamaño, retorna NONE *)
+                               else NONE
+    (* ConstructorP hace match con Constructor *)
+    | (Constructor(s2, vc), ConstructorP(s1, pc)) => if s1 = s2
+                                                     (* Si son del mismo tamaño,
+                                                        deben hacer match con
+                                                        sus valores*)
+                                                     then match(vc, pc)
+                                                     (* Si no son del mismo
+                                                        tamaño, retorna NONE *)
+                                                     else NONE
+    (* Cualquier otro caso, no hay match *)
+    | (_, _) => NONE
+
+(* 12 *)
+fun first_match v ps=
+  (* Retorna el primer match de la lista *)
+  SOME (first_answer(fn x => match(v, x)) ps)
+  (* Si no hay un match, maneja la excepcion NoAnswer y devuelve NONE *)
+  handle NoAnswer => NONE
+
 val test1 = only_capitals ["A","B","C", "lower"] = ["A","B","C"]
 val test2 = longest_string1 ["A","bc","C","ef"] = "bc"
 val test3 = longest_string2 ["A","bc","C","ef"] = "ef"
@@ -169,7 +219,7 @@ val test7 = first_answer (fn x => if x > 3 then SOME x else NONE) [1,2,3,4,5] = 
 val test8a = all_answers (fn x => if x > 2 then SOME [x] else NONE) [2,3,4] = NONE
 val test8b = all_answers (fn x => if x >= 2 then SOME [x] else NONE) [2,3,4] = SOME [2,3,4]
 val test9a = count_wildcards Wildcard = 1
-val pattern1 = TupleP([Variable "var", Wildcard, TupleP([Variable "var", Wildcard, TupleP([Variable "var", Wildcard])])]);
+val pattern1 = TupleP([Variable "var", Wildcard, TupleP([Variable "var", Wildcard, TupleP([Variable "var", Wildcard])])])
 val test9a_2 = count_wildcards pattern1 = 3
 val test9b = count_wild_and_variable_lengths (Variable("a")) = 1
 val pattern2 = TupleP([Wildcard, Variable("abc")])
@@ -177,16 +227,12 @@ val test9b_2 = count_wild_and_variable_lengths pattern2 = 4
 val pattern3 = TupleP([Variable("x"), Wildcard, Variable("x")])
 val test9c = count_some_var ("x", pattern3) = 2
 val test10 = check_pat (Variable("x")) = true
-val pattern4 = TupleP([ConstP 12, Variable "var1", Variable "var2",
-ConstructorP("constr1", Wildcard)]);
-val test10_2 = check_pat pattern4;
-
-(*
+val pattern4 = TupleP([ConstP 12, Variable "var1", Variable "var2", ConstructorP("constr1", Wildcard)])
+val test10_2 = check_pat pattern4
 val test11 = match (Const(1), UnitP) = NONE
-val test11_2 = match(Unit, UnitP) = SOME [];
-val pattern_t = Tuple([Const 12, Constructor("blah", Unit), Constructor("constr1",
-Tuple([]))]);
-val pattern_tp = TupleP([ConstP 12, Variable "var1", ConstructorP("constr1", Wildcard)]);
-val test11_3 = match(pattern_t, pattern_tp) = SOME [("var1", Constructor("blah", Unit))];
+val test11_2 = match(Unit, UnitP) = SOME []
+val pattern_t = Tuple([Const 12, Constructor("blah", Unit), Constructor("constr1", Tuple([]))])
+val pattern_tp = TupleP([ConstP 12, Variable "var1", ConstructorP("constr1", Wildcard)])
+val test11_3 = match(pattern_t, pattern_tp) = SOME [("var1", Constructor("blah", Unit))]
 val test12 = first_match Unit [UnitP] = SOME []
-*)
+val test12_2 = first_match Unit [ConstP 51] = NONE
