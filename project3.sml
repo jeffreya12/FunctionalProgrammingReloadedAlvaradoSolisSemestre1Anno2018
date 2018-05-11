@@ -80,7 +80,7 @@ val longest_capitalized = longest_string1 o only_capitals
 val rev_string = String.implode o rev o String.explode
 
 (* 7 *)
-fun first_answer f xs=
+fun first_answer f xs =
   case xs of
     (* Si llega al final de la lista, entonces levanta la excepción NoAnswer *)
     [] => raise NoAnswer
@@ -205,7 +205,7 @@ fun match (v, p) =
     | (_, _) => NONE
 
 (* 12 *)
-fun first_match v ps=
+fun first_match v ps =
   (* Retorna el primer match de la lista *)
   SOME (first_answer(fn x => match(v, x)) ps)
   (* Si no hay un match, maneja la excepcion NoAnswer y devuelve NONE *)
