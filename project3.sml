@@ -91,7 +91,7 @@ fun first_answer f xs=
                   | SOME v => v (* Si retorna SOME v, el valor de la función es v *)
 
 (* 8 *)
-fun all_answers f xs=
+fun all_answers f xs =
   let
     (* Valor que define si existen o no valores NONE en la lista *)
     val none_exists = List.exists (fn x => f(x) = NONE)
@@ -117,19 +117,22 @@ fun all_answers f xs=
 (* la función crea dos funciones anónimas: f1 retorna 1, ya que es la que
    se ejecuta cuando hay un Wildcard, y f2 que retorna 0, ya que es la que
    se ejecuta cuando NO hay un Wildcard *)
-fun count_wildcards p = g (fn _ => 1) (fn _ => 0) p
+fun count_wildcards p =
+  g (fn _ => 1) (fn _ => 0) p
 
 (* 9 (b) *)
 (* la función crea dos funciones anónimas: f1 retorna 1, ya que es la que
    se ejecuta cuando hay un Wildcard, y f2 que retorna el tamaño del string,
    ya que es la que se ejecuta cuando hay un Variable *)
-fun count_wild_and_variable_lengths p = g (fn _ => 1) (fn x => String.size x) p
+fun count_wild_and_variable_lengths p =
+  g (fn _ => 1) (fn x => String.size x) p
 
 (* 9 (c) *)
 (* la función crea dos funciones anónimas: f1 retorna 0, ya que es la que
    se ejecuta cuando hay un Wildcard, y f2 que retorna 1 en caso que haga macth
    con el String, 0 en caso contrario *)
-fun count_some_var (text, p) = g (fn _ => 0) (fn x => if x = text then 1 else 0) p
+fun count_some_var (text, p) =
+  g (fn _ => 0) (fn x => if x = text then 1 else 0) p
 
 (* 10 *)
 fun check_pat p =
@@ -159,7 +162,7 @@ fun check_pat p =
   end
 
 (* 11 *)
-fun match (v, p)=
+fun match (v, p) =
   case (v, p) of
     (* Wildcard hace match con todo y retorna una lista vacía *)
     (_, Wildcard) => SOME []
