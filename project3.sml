@@ -144,6 +144,9 @@ fun check_pat p =
         (* Si es una tupla, llama recursivamente a la funcion con el elemento
            actual y lo concatena con el acumulador *)
         | TupleP tp => foldl (fn (x, y) => variable_content(x)@y) [] tp
+        (* En caso que la estructura sea un ConstructorP, llama a la función
+           recursivamente con el pattern *)
+        | ConstructorP (cs, cp) => variable_content cp
         (* Cualquier otro caso, retorna una lista vacía *)
         | _ => []
     fun check_repeat xs =
