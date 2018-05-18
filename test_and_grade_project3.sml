@@ -1,4 +1,4 @@
-use "your_file_name.sml";
+use "project3.sml";
 
 
 val test1 = if only_capitals ["A","B","C"] = ["A","B","C"] then 1 else 0;
